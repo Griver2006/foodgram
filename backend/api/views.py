@@ -1,6 +1,5 @@
 from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 from django.shortcuts import get_object_or_404, redirect
 from django.db.models import Sum
@@ -10,22 +9,22 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework import status, filters, permissions
+from rest_framework import status, permissions
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
 from djoser.views import UserViewSet
 
-from api.filters import RecipeFilter
+from api.filters import IngredientFilter, RecipeFilter
 from api.permissions import IsAuthorOrReadOnly
-from api.models import (Follow,
-                        FavouriteRecipe,
-                        Ingredient,
-                        Recipe,
-                        RecipeIngredient,
-                        ShoppingList,
-                        Tag,
-                        User)
+from recipes.models import (Follow,
+                            FavouriteRecipe,
+                            Ingredient,
+                            Recipe,
+                            RecipeIngredient,
+                            ShoppingList,
+                            Tag,
+                            User)
 
 from api.serializers import (IngredientSerializer,
                              RecipeSerializer,
@@ -120,7 +119,7 @@ class UsUserViewSet(UserViewSet):
     def subscribe(self, request, id):
         if request.user.id == int(id):
             return Response(
-                {'detail': 'Пользователь не может подписаться сам на себя.'},
+                {'detail': 'Пользователь не может подписаться/отписаться сам на себя.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -142,6 +141,7 @@ class TagViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
     pagination_class = None
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
+    permission_classes = (permissions.AllowAny, )
 
 
 class ShortLinkRedirectView(APIView):
@@ -190,7 +190,11 @@ class RecipeViewSet(ModelViewSet):
             ) if request.method == 'POST' else None
         )
 
-    @action(detail=False, methods=('get',))
+    @action(
+        detail=False,
+        methods=('get',),
+        permission_classes=(permissions.IsAuthenticated,)
+    )
     def download_shopping_cart(self, request):
         shopping_cart = ShoppingList.objects.filter(
             user=request.user
@@ -250,5 +254,6 @@ class IngredientViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
     pagination_class = None
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('name', )
+    permission_classes = (permissions.AllowAny, )
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = IngredientFilter
