@@ -97,6 +97,11 @@ class Recipe(models.Model):
         verbose_name_plural = 'Рецепты'
         ordering = ('-created_at',)
 
+    def favorite_count(self):
+        return self.favourites.count()
+
+    favorite_count.short_description = 'В избранном'
+
     def __str__(self):
         return self.name[:STR_OUTPUT_SLICE]
 
@@ -173,7 +178,8 @@ class FavouriteRecipe(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        verbose_name='Избранное'
+        related_name='favourites',
+        verbose_name='Избранное',
     )
 
     class Meta:

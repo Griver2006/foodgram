@@ -16,15 +16,15 @@ class RecipeFilter(filters.FilterSet):
     def filter_by_is_favorited(self, queryset, name, value):
         user = self.request.user
 
-        if value:
-            return queryset.filter(favouriterecipe__user=user)
+        if value and user.is_authenticated:
+            return queryset.filter(favourites__user=user)
 
         return queryset
 
     def filter_by_is_in_shopping_cart(self, queryset, name, value):
         user = self.request.user
 
-        if value:
+        if value and user.is_authenticated:
             return queryset.filter(shoppinglist__user=user)
 
         return queryset

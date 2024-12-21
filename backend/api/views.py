@@ -95,17 +95,17 @@ class UsUserViewSet(UserViewSet):
                     status=status.HTTP_200_OK
                 )
         elif request.method == 'DELETE':
-            user.avatar = 'users/avatar-icon.png'
+            user.avatar = ''
             user.save()
             return Response(
-                {'detail': 'Аватар успешно удалён'},
+                {'avatar': 'Аватар успешно удалён'},
                 status=status.HTTP_204_NO_CONTENT
             )
 
     @action(
         detail=False,
-        methods=['get'],
-        # permission_classes=(permissions.IsAuthenticated, IsAuthor)
+        methods=('get',),
+        permission_classes=(permissions.IsAuthenticated,)
     )
     def subscriptions(self, request):
         following_users = User.objects.filter(followers__user=request.user)
@@ -115,7 +115,11 @@ class UsUserViewSet(UserViewSet):
         )
         return self.get_paginated_response(serializer.data)
 
-    @action(detail=True, methods=('post', 'delete'))
+    @action(
+        detail=True,
+        methods=('post', 'delete'),
+        permission_classes=(permissions.IsAuthenticated,)
+    )
     def subscribe(self, request, id):
         if request.user.id == int(id):
             return Response(
@@ -133,6 +137,22 @@ class UsUserViewSet(UserViewSet):
             ) if request.method == 'POST' else None
         )
 
+    @action(
+        detail=False,
+        methods=('get', 'put', 'patch', 'delete'),
+        permission_classes=(permissions.IsAuthenticated, )
+    )
+    def me(self, request, *args, **kwargs):
+        self.get_object = self.get_instance
+        if request.method == 'GET':
+            return self.retrieve(request, *args, **kwargs)
+        elif request.method == 'PUT':
+            return self.update(request, *args, **kwargs)
+        elif request.method == 'PATCH':
+            return self.partial_update(request, *args, **kwargs)
+        elif request.method == 'DELETE':
+            return self.destroy(request, *args, **kwargs)
+
 
 class TagViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
     """
@@ -144,14 +164,14 @@ class TagViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
     permission_classes = (permissions.AllowAny, )
 
 
-class ShortLinkRedirectView(APIView):
+def redirect_to_recipe(request, short_link):
     """
     Вьюшка, которая производит редирект от короткой ссылки на нужный url.
     """
 
-    def get(self, request, short_link):
-        instance = get_object_or_404(Recipe, short_link=short_link)
-        return redirect(f"/api/recipes/{instance.id}/")
+    recipe = get_object_or_404(Recipe, short_link=short_link)
+    # Перенаправляем на страницу рецепта
+    return redirect(f'/api/recipes/{recipe.id}/')
 
 
 class RecipeViewSet(ModelViewSet):
@@ -176,7 +196,7 @@ class RecipeViewSet(ModelViewSet):
         full_url = (f'{request.build_absolute_uri("/")}s/'
                     f'{get_object_or_404(Recipe, pk=pk).short_link}')
 
-        return Response({'full_url': full_url})
+        return Response({'short-link': full_url})
 
     @action(detail=True, methods=('post', 'delete'))
     def shopping_cart(self, request, pk):
@@ -236,6 +256,7 @@ class RecipeViewSet(ModelViewSet):
     @action(detail=True, methods=('delete', 'post'))
     def favorite(self, request, pk):
         recipe = get_object_or_404(Recipe, pk=pk)
+
         return handle_add_remove(
             request,
             FavouriteRecipe,

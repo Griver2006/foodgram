@@ -37,6 +37,8 @@ class UsUserCreateSerializer(UserCreateSerializer):
     """
     Сериализатор для регистрации пользователя с переопределёнными полями.
     """
+    first_name = serializers.CharField(max_length=150, required=True)
+    last_name = serializers.CharField(max_length=150, required=True)
 
     class Meta(UserCreateSerializer.Meta):
         fields = (
@@ -179,33 +181,41 @@ class RecipeSerializer(serializers.ModelSerializer):
     def validate_tags(self, value):
         if not value:
             raise serializers.ValidationError('Должен быть хотя бы 1 тег.')
+        if len(set(value)) != len(value):
+            raise serializers.ValidationError('Теги не должны повторяться.')
+
         return value
 
     def validate_ingredients(self, value):
         if not value:
             raise serializers.ValidationError('Должен быть хотя бы 1 ингредиент.')
 
-        missing_fields = []
-        for item in value:
-            if 'ingredient' not in item:
-                missing_fields.append('id')
-            if 'amount' not in item:
-                missing_fields.append('amount')
-        if missing_fields:
-            raise serializers.ValidationError({
-                field: 'Это поле обязательно для заполнения.' for field in missing_fields
-            })
-
+        # Проверка на повторения ингредиентов
         ingredient_ids = [item['ingredient']['id'] for item in value if 'ingredient' in item]
         if len(ingredient_ids) != len(set(ingredient_ids)):
             raise serializers.ValidationError('Ингредиенты не должны повторяться.')
 
+        # Проверка на отсутствие ингредиентов в базе
         existing_ingredients = Ingredient.objects.filter(id__in=ingredient_ids).values_list('id', flat=True)
         missing_ingredients = set(ingredient_ids) - set(existing_ingredients)
         if missing_ingredients:
             raise serializers.ValidationError(
                 f'Следующие ингредиенты отсутствуют в базе данных: {", ".join(map(str, missing_ingredients))}'
             )
+
+        # Проверка на правильную заполненность каждого из ингредиентов
+        missing_fields = []
+        for item in value:
+            if 'ingredient' not in item:
+                missing_fields.append('id')
+            if 'amount' not in item:
+                missing_fields.append('amount')
+            if item['amount'] < 1:
+                raise serializers.ValidationError({'amount': 'Количество не может быть меньше 1.'})
+        if missing_fields:
+            raise serializers.ValidationError({
+                field: 'Это поле обязательно для заполнения.' for field in missing_fields
+            })
 
         return value
 
