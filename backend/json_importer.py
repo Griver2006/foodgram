@@ -3,7 +3,7 @@ import json
 from recipes.models import Ingredient
 
 
-with open('../data/ingredients.json', encoding='UTF-8') as f:
+with open('data/ingredients.json', encoding='UTF-8') as f:
     parsed_data = json.load(f)
 
 

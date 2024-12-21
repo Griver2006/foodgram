@@ -18,7 +18,6 @@ class User(AbstractUser):
     )
     avatar = models.ImageField(
         upload_to='users/',
-        default='users/avatar-icon.png'
     )
     follow = models.ManyToManyField(
         'self',
@@ -35,4 +34,4 @@ class User(AbstractUser):
     class Meta:
         verbose_name = 'пользователь'
         verbose_name_plural = 'Пользователи'
-        ordering = ('email', 'username')
+        ordering = ('username',)
