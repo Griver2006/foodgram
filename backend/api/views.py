@@ -170,7 +170,7 @@ def redirect_to_recipe(request, short_link):
 
     recipe = get_object_or_404(Recipe, short_link=short_link)
     # Перенаправляем на страницу рецепта
-    return redirect(f'/api/recipes/{recipe.id}/')
+    return redirect(f'/recipes/{recipe.id}/')
 
 
 class RecipeViewSet(ModelViewSet):
