@@ -74,7 +74,9 @@ class UserSerializer(serializers.ModelSerializer):
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
-            return Follow.objects.filter(user=request.user, following=obj).exists()
+            return Follow.objects.filter(
+                user=request.user, following=obj
+            ).exists()
         return False
 
 
@@ -113,7 +115,9 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
     id = serializers.IntegerField(source='ingredient.id')
     name = serializers.CharField(source='ingredient.name', required=False)
-    measurement_unit = serializers.ReadOnlyField(source='ingredient.measurement_unit')
+    measurement_unit = serializers.ReadOnlyField(
+        source='ingredient.measurement_unit'
+    )
 
     class Meta:
         model = RecipeIngredient
@@ -159,15 +163,20 @@ class RecipeSerializer(serializers.ModelSerializer):
         """Валидация обязательных полей при обновлении."""
         request_method = self.context['request'].method
         if request_method == 'PATCH':
-            required_fields = ['tags', 'recipe_ingredients', 'name', 'text', 'cooking_time']
-            missing_fields = [field for field in required_fields if field not in data]
+            required_fields = [
+                'tags', 'recipe_ingredients', 'name', 'text', 'cooking_time'
+            ]
+            missing_fields = [field
+                              for field in required_fields
+                              if field not in data]
             if 'recipe_ingredients' in missing_fields:
                 missing_fields.remove('recipe_ingredients')
                 missing_fields.append('ingredients')
 
             if missing_fields:
                 raise serializers.ValidationError({
-                    field: 'Это поле обязательно для заполнения.' for field in missing_fields
+                    field: 'Это поле обязательно для заполнения.'
+                    for field in missing_fields
                 })
         return data
 
@@ -188,19 +197,27 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def validate_ingredients(self, value):
         if not value:
-            raise serializers.ValidationError('Должен быть хотя бы 1 ингредиент.')
+            raise serializers.ValidationError(
+                'Должен быть хотя бы 1 ингредиент.'
+            )
 
         # Проверка на повторения ингредиентов
-        ingredient_ids = [item['ingredient']['id'] for item in value if 'ingredient' in item]
+        ingredient_ids = [item['ingredient']['id']
+                          for item in value if 'ingredient' in item]
         if len(ingredient_ids) != len(set(ingredient_ids)):
-            raise serializers.ValidationError('Ингредиенты не должны повторяться.')
+            raise serializers.ValidationError(
+                'Ингредиенты не должны повторяться.'
+            )
 
         # Проверка на отсутствие ингредиентов в базе
-        existing_ingredients = Ingredient.objects.filter(id__in=ingredient_ids).values_list('id', flat=True)
+        existing_ingredients = Ingredient.objects.filter(
+            id__in=ingredient_ids
+        ).values_list('id', flat=True)
         missing_ingredients = set(ingredient_ids) - set(existing_ingredients)
         if missing_ingredients:
             raise serializers.ValidationError(
-                f'Следующие ингредиенты отсутствуют в базе данных: {", ".join(map(str, missing_ingredients))}'
+                'Следующие ингредиенты отсутствуют в базе данных: '
+                + ', '.join(map(str, missing_ingredients))
             )
 
         # Проверка на правильную заполненность каждого из ингредиентов
@@ -211,23 +228,29 @@ class RecipeSerializer(serializers.ModelSerializer):
             if 'amount' not in item:
                 missing_fields.append('amount')
             if item['amount'] < 1:
-                raise serializers.ValidationError({'amount': 'Количество не может быть меньше 1.'})
+                raise serializers.ValidationError(
+                    {'amount': 'Количество не может быть меньше 1.'}
+                )
         if missing_fields:
             raise serializers.ValidationError({
-                field: 'Это поле обязательно для заполнения.' for field in missing_fields
+                field: 'Это поле обязательно для заполнения.'
+                for field in missing_fields
             })
 
         return value
 
     def _save_ingredients(self, recipe, ingredients_data):
         """
-        Функция для сохранения ингредиентов и их количества у определённого рецепта.
+        Функция для сохранения ингредиентов.
+        Также сохраняет и количество ингредиента.
         """
         recipe.recipe_ingredients.all().delete()
         recipe_ingredients = [
             RecipeIngredient(
                 recipe=recipe,
-                ingredient=Ingredient.objects.get(id=ingredient_data['ingredient']['id']),
+                ingredient=Ingredient.objects.get(
+                    id=ingredient_data['ingredient']['id']
+                ),
                 amount=ingredient_data['amount']
             )
             for ingredient_data in ingredients_data
@@ -261,13 +284,17 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['tags'] = TagSerializer(instance.tags.all(), many=True).data
+        representation['tags'] = TagSerializer(
+            instance.tags.all(), many=True
+        ).data
         return representation
 
     def get_is_favorited(self, obj):
         user = self.context.get('request').user
         if user.is_authenticated:
-            return FavouriteRecipe.objects.filter(user=user, recipe=obj).exists()
+            return FavouriteRecipe.objects.filter(
+                user=user, recipe=obj
+            ).exists()
         return False
 
     def get_is_in_shopping_cart(self, obj):
@@ -295,7 +322,9 @@ class RecipeShortSerializer(serializers.ModelSerializer):
 
     def get_image(self, obj):
         if obj.image:
-            return self.context.get('request').build_absolute_uri(obj.image.url)
+            return self.context.get(
+                'request'
+            ).build_absolute_uri(obj.image.url)
         return None
 
 
@@ -330,7 +359,9 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
         else:
             recipes = obj.recipes.all()
 
-        return RecipeShortSerializer(recipes, many=True, context={'request': request}).data
+        return RecipeShortSerializer(
+            recipes, many=True, context={'request': request}
+        ).data
 
     def get_recipes_count(self, obj):
         return obj.recipes.count()
@@ -338,5 +369,7 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
-            return Follow.objects.filter(user=request.user, following=obj).exists()
+            return Follow.objects.filter(
+                user=request.user, following=obj
+            ).exists()
         return False

@@ -11,10 +11,15 @@ class IsAuthorOrReadOnly(BasePermission):
         if request.method in SAFE_METHODS:
             return True
 
-        return request.user and (
-                (obj.author == request.user) or
-                (request.user.is_authenticated
-                 and request.user.is_staff)
+        return (
+            request.user
+            and (
+                obj.author == request.user
+                or (
+                    request.user.is_authenticated
+                    and request.user.is_staff
+                )
+            )
         )
 
 
@@ -31,17 +36,30 @@ class IsAdminOrReadOnly(BasePermission):
         if request.method in SAFE_METHODS:
             return True
 
-        return (request.user
-                and request.user.is_authenticated
-                and request.user.is_staff)
+        return (
+            request.user
+            and request.user.is_authenticated
+            and request.user.is_staff
+        )
 
 
 class CurrentUserOrAdminOrReadOnly(BasePermission):
+    """
+    Разрешение для текущего пользователя, администратора
+    или для чтения.
+    """
+
     def has_object_permission(self, request, view, obj):
         user = request.user
 
         if request.method in SAFE_METHODS:
             return True
 
-        return ((user.is_authenticated and type(obj) == type(user) and obj == user) or
-                user.is_authenticated and user.is_staff)
+        return (
+            user.is_authenticated
+            and (
+                isinstance(obj, type(user))
+                and obj == user
+                or user.is_staff
+            )
+        )

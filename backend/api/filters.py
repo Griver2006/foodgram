@@ -5,9 +5,15 @@ from recipes.models import Recipe, Ingredient
 
 
 class RecipeFilter(filters.FilterSet):
-    is_favorited = filters.BooleanFilter(method='filter_by_is_favorited')
-    is_in_shopping_cart = filters.BooleanFilter(method='filter_by_is_in_shopping_cart')
-    tags = filters.CharFilter(method='filter_by_tags')
+    is_favorited = filters.BooleanFilter(
+        method='filter_by_is_favorited'
+    )
+    is_in_shopping_cart = filters.BooleanFilter(
+        method='filter_by_is_in_shopping_cart'
+    )
+    tags = filters.CharFilter(
+        method='filter_by_tags'
+    )
 
     class Meta:
         model = Recipe

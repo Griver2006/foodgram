@@ -46,7 +46,8 @@ def handle_add_remove(request, model, filter_kwargs, serializer=None):
                 status=status.HTTP_400_BAD_REQUEST
             )
         return Response(
-            serializer.data if serializer else {'detail': 'Успешно добавлено.'},
+            serializer.data if serializer
+            else {'detail': 'Успешно добавлено.'},
             status=status.HTTP_201_CREATED
         )
     elif request.method == 'DELETE':
@@ -122,7 +123,8 @@ class UsUserViewSet(UserViewSet):
     def subscribe(self, request, id):
         if request.user.id == int(id):
             return Response(
-                {'detail': 'Пользователь не может подписаться/отписаться сам на себя.'},
+                {'detail': 'Пользователь не может '
+                           'подписаться/отписаться сам на себя.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -180,8 +182,13 @@ class RecipeViewSet(ModelViewSet):
 
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    filter_backends = (DjangoFilterBackend,)
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly)
+    filter_backends = (
+        DjangoFilterBackend,
+    )
+    permission_classes = (
+        permissions.IsAuthenticatedOrReadOnly,
+        IsAuthorOrReadOnly
+    )
     filterset_class = RecipeFilter
 
     def perform_create(self, serializer):
