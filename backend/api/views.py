@@ -6,7 +6,6 @@ from django.db.models import Sum
 
 from django_filters.rest_framework import DjangoFilterBackend
 
-from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status, permissions
@@ -140,7 +139,7 @@ class UsUserViewSet(UserViewSet):
     @action(
         detail=False,
         methods=('get', 'put', 'patch', 'delete'),
-        permission_classes=(permissions.IsAuthenticated, )
+        permission_classes=(permissions.IsAuthenticated,)
     )
     def me(self, request, *args, **kwargs):
         self.get_object = self.get_instance
