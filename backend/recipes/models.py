@@ -1,3 +1,5 @@
+from hashids import Hashids
+
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
@@ -7,6 +9,7 @@ from api.constants import MAX_CHAR_LENGTH, STR_OUTPUT_SLICE
 
 
 User = get_user_model()
+hashids = Hashids(min_length=3)
 
 
 class Follow(models.Model):
@@ -81,21 +84,29 @@ class Recipe(models.Model):
         related_name='recipes',
         verbose_name='Автор'
     )
-    is_published = models.BooleanField(
-        default=True,
-        verbose_name='Опубликовано',
-        help_text='Снимите галочку, чтобы скрыть рецепт.'
-    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name='Добавлено'
     )
-    short_link = models.CharField(max_length=255, blank=True, unique=True)
+    short_link = models.CharField(
+        max_length=255,
+        blank=True,
+        unique=True,
+        null=True
+    )
 
     class Meta:
         verbose_name = 'рецепт'
         verbose_name_plural = 'Рецепты'
         ordering = ('-created_at',)
+
+    def save(self, *args, **kwargs):
+        if self.pk is None:
+            super().save(*args, **kwargs)
+            self.short_link = hashids.encode(self.pk)
+            self.save()
+        else:
+            super().save(*args, **kwargs)
 
     def favorite_count(self):
         return self.favourites.count()
@@ -165,6 +176,11 @@ class RecipeIngredient(models.Model):
         verbose_name='Количество',
     )
 
+    def __str__(self):
+        return (f'Ингредиент "{self.ingredient.name} {self.amount}'
+                f' {self.ingredient.measurement_unit}"'
+                f' в рецепте "{self.recipe}"')
+
 
 class FavouriteRecipe(models.Model):
     """Связующая модель для 'Избранных рецептов'."""
@@ -223,6 +239,5 @@ class ShoppingList(models.Model):
         )
 
     def __str__(self):
-        # return self.recipe.name
         return (f'Рецепт "{self.recipe.name}" в списке в покупках'
                 f' у пользователя "{self.user.username}"')

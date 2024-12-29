@@ -1,6 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from api.constants import STR_OUTPUT_SLICE
+
 
 class User(AbstractUser):
     """Кастомная модель юзера."""
@@ -19,19 +21,12 @@ class User(AbstractUser):
     avatar = models.ImageField(
         upload_to='users/',
     )
-    follow = models.ManyToManyField(
-        'self',
-        through='recipes.Follow',
-        symmetrical=False,
-        verbose_name='Подписки'
-    )
-    favourite_recipes = models.ManyToManyField(
-        'recipes.Recipe',
-        through='recipes.FavouriteRecipe',
-        verbose_name='Избранное'
-    )
 
     class Meta:
         verbose_name = 'пользователь'
         verbose_name_plural = 'Пользователи'
         ordering = ('username',)
+
+    def __str__(self):
+        """Возвращает строковое представление пользователя."""
+        return self.username[:STR_OUTPUT_SLICE]

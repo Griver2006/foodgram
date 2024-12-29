@@ -1,7 +1,5 @@
 import base64
 
-from hashids import Hashids
-
 from djoser.serializers import UserCreateSerializer
 
 from django.core.files.base import ContentFile
@@ -19,7 +17,6 @@ from recipes.models import (Follow,
 
 
 User = get_user_model()
-hashids = Hashids(min_length=3)
 
 
 class Base64ImageField(serializers.ImageField):
@@ -222,20 +219,24 @@ class RecipeSerializer(serializers.ModelSerializer):
 
         # Проверка на правильную заполненность каждого из ингредиентов
         missing_fields = []
-        for item in value:
+
+        for index, item in enumerate(value):
+            errors = {}
+
             if 'ingredient' not in item:
-                missing_fields.append('id')
+                errors['ingredient'] = ['Поле обязательно.']
             if 'amount' not in item:
-                missing_fields.append('amount')
-            if item['amount'] < 1:
-                raise serializers.ValidationError(
-                    {'amount': 'Количество не может быть меньше 1.'}
-                )
+                errors['amount'] = ['Поле обязательно.']
+            if 'amount' in item and item['amount'] < 1:
+                errors['amount'] = ['Количество должно быть больше 0.']
+
+            # Если есть ошибки, добавляем их в список для текущего ингредиента
+            if errors:
+                missing_fields.append(errors)
+
+        # Если найдены ошибки, выбрасываем ValidationError
         if missing_fields:
-            raise serializers.ValidationError({
-                field: 'Это поле обязательно для заполнения.'
-                for field in missing_fields
-            })
+            raise serializers.ValidationError(missing_fields)
 
         return value
 
@@ -265,7 +266,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         recipe.tags.set(tags)
         self._save_ingredients(recipe, ingredients_data)
 
-        recipe.short_link = hashids.encode(recipe.pk)
         recipe.save()
 
         return recipe
