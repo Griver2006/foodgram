@@ -26,16 +26,19 @@ class RecipeIngredientInline(admin.StackedInline):
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     form = RecipeForm
-    list_display = ('name', 'author')
-    readonly_fields = ('favorite_count', 'short_link')
+    list_display = ('name', 'author', 'short_link')
+    readonly_fields = ('favorite_count', 'get_short_link')
+    exclude = ('short_link', )
     search_fields = ('name', 'author__username')
     list_filter = ('tags', )
     inlines = (RecipeIngredientInline,)
 
-    def short_link(self, obj):
-        if obj.short_link:
+    def get_short_link(self, obj):
+        if obj.pk:
             return obj.short_link
         return 'Ссылка появится после сохранения'
+
+    get_short_link.short_description = 'Короткая ссылка'
 
 
 @admin.register(Ingredient)
