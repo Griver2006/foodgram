@@ -1,7 +1,7 @@
 from django_filters import rest_framework as filters
-from django_filters import CharFilter
+from django_filters import CharFilter, ModelMultipleChoiceFilter
 
-from recipes.models import Recipe, Ingredient
+from recipes.models import Ingredient, Recipe, Tag
 
 
 class RecipeFilter(filters.FilterSet):
@@ -11,8 +11,10 @@ class RecipeFilter(filters.FilterSet):
     is_in_shopping_cart = filters.BooleanFilter(
         method='filter_by_is_in_shopping_cart'
     )
-    tags = filters.CharFilter(
-        method='filter_by_tags'
+    tags = ModelMultipleChoiceFilter(
+        queryset=Tag.objects.all(),
+        field_name='tags__slug',
+        to_field_name='slug',
     )
 
     class Meta:
@@ -31,14 +33,8 @@ class RecipeFilter(filters.FilterSet):
         user = self.request.user
 
         if value and user.is_authenticated:
-            return queryset.filter(shoppinglist__user=user)
+            return queryset.filter(purchases__user=user)
 
-        return queryset
-
-    def filter_by_tags(self, queryset, name, value):
-        tag_slugs = self.request.query_params.getlist('tags')
-        if tag_slugs:
-            queryset = queryset.filter(tags__slug__in=tag_slugs).distinct()
         return queryset
 
 

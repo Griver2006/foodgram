@@ -74,7 +74,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'foodgram.wsgi.application'
 
 
-if os.getenv("DB_ENGINE") == "sqlite":
+if os.getenv('DB_ENGINE') == 'sqlite':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -113,13 +113,12 @@ AUTH_PASSWORD_VALIDATORS = [
 DJOSER = {
     'LOGIN_FIELD': 'email',
     'SERIALIZERS': {
-        'user_create': 'api.serializers.UsUserCreateSerializer',
         'user': 'api.serializers.UserSerializer',
         'current_user': 'api.serializers.UserSerializer',
     },
     'PERMISSIONS': {
         'user_list': ('rest_framework.permissions.AllowAny',),
-        'user': ('api.permissions.CurrentUserOrAdminOrReadOnly',)
+        'user': ('api.permissions.IsAuthorOrReadOnly',)
     }
 }
 

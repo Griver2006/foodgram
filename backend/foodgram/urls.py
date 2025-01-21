@@ -3,14 +3,13 @@ from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
 
-
-from api.views import redirect_to_recipe
+from recipes.views import redirect_to_recipe
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
-    path('s/<str:short_link>/', redirect_to_recipe, name='short-link'),
+    path('s/<slug:short_link>/', redirect_to_recipe, name='redirect_to_recipe'),
 ]
 
 if settings.DEBUG:
