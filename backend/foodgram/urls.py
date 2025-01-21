@@ -7,9 +7,18 @@ from recipes.views import redirect_to_recipe
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include('api.urls')),
-    path('s/<slug:short_link>/', redirect_to_recipe, name='redirect_to_recipe'),
+    path(
+        'admin/',
+        admin.site.urls
+    ),
+    path(
+        'api/', include('api.urls')
+    ),
+    path(
+        's/<slug:short_link>/',
+        redirect_to_recipe,
+        name='redirect_to_recipe'
+    ),
 ]
 
 if settings.DEBUG:

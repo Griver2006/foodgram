@@ -13,8 +13,17 @@ class UserAdmin(UserAdmin):
     fieldsets = UserAdmin.fieldsets + (
         ('Аватар', {'fields': ('avatar',)}),
     )
-    list_display = ('username', 'email', 'is_staff', 'recipes_count', 'subscriptions_count')
-    search_fields = ('email', 'username')
+    list_display = (
+        'username',
+        'email',
+        'is_staff',
+        'recipes_count',
+        'subscriptions_count'
+    )
+    search_fields = (
+        'email',
+        'username'
+    )
 
     def recipes_count(self, obj):
         return obj.recipes.count()

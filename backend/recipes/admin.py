@@ -21,11 +21,27 @@ class RecipeIngredientInline(admin.StackedInline):
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'author', 'get_ingredients', 'get_tags', 'get_image')
-    readonly_fields = ('get_favorite_count', 'get_short_link')
-    exclude = ('short_link', )
-    search_fields = ('name', 'author__username')
-    list_filter = ('tags', )
+    list_display = (
+        'name',
+        'author',
+        'get_ingredients',
+        'get_tags',
+        'get_image'
+    )
+    readonly_fields = (
+        'get_favorite_count',
+        'get_short_link'
+    )
+    exclude = (
+        'short_link',
+    )
+    search_fields = (
+        'name',
+        'author__username'
+    )
+    list_filter = (
+        'tags',
+    )
     inlines = (RecipeIngredientInline,)
 
     def get_queryset(self, request):
