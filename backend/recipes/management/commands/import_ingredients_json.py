@@ -38,8 +38,5 @@ class Command(BaseCommand):
             ]
 
             Ingredient.objects.bulk_create(ingredients, ignore_conflicts=True)
-            Ingredient.objects.bulk_create(
-                ingredients, ignore_conflicts=True
-            )
 
         self.stdout.write(self.style.SUCCESS('Импорт из JSON завершен!'))

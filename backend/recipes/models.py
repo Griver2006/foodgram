@@ -45,7 +45,8 @@ class Recipe(models.Model):
     cooking_time = models.PositiveSmallIntegerField(
         validators=(MinValueValidator(
             MIN_COOKING_TIME,
-            message='Время готовки не может быть меньше 1'),),
+            message='Время готовки не может быть меньше '
+                    f'{MIN_COOKING_TIME}'),),
         verbose_name='Время приготовления',
     )
     image = models.ImageField(
@@ -150,7 +151,8 @@ class RecipeIngredient(models.Model):
     amount = models.PositiveIntegerField(
         validators=(MinValueValidator(
             MIN_INGREDIENT_AMOUNT_QUANTITY,
-            message='Количество ингредиента не может быть меньше 1'),),
+            message='Количество ингредиента не может быть меньше '
+                    f'{MIN_INGREDIENT_AMOUNT_QUANTITY}'),),
         verbose_name='Количество',
     )
 

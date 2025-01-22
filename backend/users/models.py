@@ -31,6 +31,8 @@ class User(AbstractUser):
     )
     avatar = models.ImageField(
         upload_to='users/',
+        blank=True,
+        null=True
     )
 
     class Meta:
