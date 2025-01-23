@@ -192,7 +192,9 @@ class BaseUserRecipeRelation(models.Model):
         )
 
     def __str__(self):
-        return self._meta.verbose_name
+        return (f'Рецепт "{self.recipe.name}" добавлен в '
+                f'"{self._meta.verbose_name}" у '
+                f'пользователя {self.user.username}')
 
 
 class FavouriteRecipe(BaseUserRecipeRelation):

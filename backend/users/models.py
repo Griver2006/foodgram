@@ -82,4 +82,4 @@ class Subscription(models.Model):
         super(Subscription, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.author.username[:STR_OUTPUT_SLICE]
+        return f'{self.user.username} подписан на {self.author.username}'

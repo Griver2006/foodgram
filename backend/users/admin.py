@@ -31,7 +31,7 @@ class UserAdmin(UserAdmin):
 
     @admin.display(description='Количество подписчиков')
     def subscriptions_count(self, obj):
-        return Subscription.objects.filter(recipes_author=obj).count()
+        return obj.subscriptions_to_author.count()
 
 
 admin.site.register(Subscription)
