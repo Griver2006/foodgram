@@ -1,3 +1,5 @@
+[![Main Foodgram workflow](https://github.com/Griver2006/foodgram/actions/workflows/main.yml/badge.svg)](https://github.com/Griver2006/foodgram/actions/workflows/main.yml)
+
 Ознакомиться с проектом вы можете по следующей ссылке: https://thebestfoodgram.zapto.org/
 
 # Описание:
