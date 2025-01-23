@@ -57,9 +57,14 @@ class UserSerializer(BaseUserSerializer):
         )
 
     def get_is_subscribed(self, obj):
-        user = self.context['request'].user
-        return (user.is_authenticated
-                and obj.subscriptions_to_author.filter(user=user).exists())
+        request = self.context.get('request', False)
+
+        return (
+            request and request.user.is_authenticated
+            and obj.subscriptions_to_author.filter(
+                user=request.user
+            ).exists()
+        )
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -267,7 +272,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 'name',
                 'text',
                 'cooking_time',
-                'image'
             ]
             missing_fields = [field
                               for field in required_fields
@@ -300,15 +304,16 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         if len(ingredient_ids) != len(set(ingredient_ids)):
             errors['ingredients'] = 'Ингредиенты не должны повторяться.'
 
-        # ВАЛИДИРУЕМ ИЗОБРАЖЕНИЕ
-        image = data['image']
-        if not image:
-            errors['image'] = 'Поле не должно быть пустым'
-
         if errors:
             raise serializers.ValidationError(errors)
 
         return data
+
+    def validate_image(self, value):
+        if not value:
+            raise serializers.ValidationError(
+                'Поле не должно быть пустым'
+            )
 
 
 class RecipeShortSerializer(serializers.ModelSerializer):
@@ -359,7 +364,7 @@ class BaseFavouriteAndShoppingListSerializer(serializers.ModelSerializer):
         ).exists():
             raise ValidationError(
                 {
-                    'detail': f'{self.Meta.model._meta.verbose_name} уже '
+                    'detail': 'Рецепт уже '
                               'есть в '
                               + self.Meta.model._meta.verbose_name_plural
                 }

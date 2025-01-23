@@ -112,19 +112,14 @@ class UserViewSet(BaseUserViewSet):
             User,
             id=id,
         )
-        subscription = Subscription.objects.filter(
+        deleted, _ = Subscription.objects.filter(
             user=request.user, author__id=author.id
         ).delete()
-        if subscription[0]:
-            return Response(
-                {'detail': 'Подписка удалена.'},
-                status=status.HTTP_204_NO_CONTENT
-            )
-        else:
-            return Response(
-                {'detail': 'Подписка не найдена.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+
+        return Response(
+            status=status.HTTP_204_NO_CONTENT if deleted
+            else status.HTTP_400_BAD_REQUEST
+        )
 
     @action(
         detail=False,
@@ -236,9 +231,6 @@ class RecipeViewSet(ModelViewSet):
         return response
 
     def add_in_favorite_or_in_shopping_list(self, serializer, pk):
-        # В реьвю вы сказали сделать этот метод статиком методом
-        # и доставать request из self, но если метод будет статичным
-        # то self не передаётся, поэтому не сделал этот метод статичным
         recipe = get_object_or_404(Recipe, id=pk)
         request = self.request
 
@@ -269,38 +261,26 @@ class RecipeViewSet(ModelViewSet):
     @favorite.mapping.delete
     def delete_favorite(self, request, pk):
         recipe = get_object_or_404(Recipe, pk=pk)
-        deleted_count, _ = FavouriteRecipe.objects.filter(
+        deleted, _ = FavouriteRecipe.objects.filter(
             user=request.user, recipe_id=recipe.pk
         ).delete()
 
-        if deleted_count:
-            return Response(
-                {'detail': 'Успешно удалено.'},
-                status=status.HTTP_204_NO_CONTENT
-            )
-        else:
-            return Response(
-                {'detail': 'Рецепта не было в избранном.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        return Response(
+            status=status.HTTP_204_NO_CONTENT if deleted
+            else status.HTTP_400_BAD_REQUEST
+        )
 
     @shopping_cart.mapping.delete
     def delete_shopping_cart(self, request, pk):
         recipe = get_object_or_404(Recipe, pk=pk)
-        deleted_count, _ = ShoppingList.objects.filter(
+        deleted, _ = ShoppingList.objects.filter(
             user=request.user, recipe_id=recipe.pk
         ).delete()
 
-        if deleted_count:
-            return Response(
-                {'detail': 'Успешно удалено.'},
-                status=status.HTTP_204_NO_CONTENT
-            )
-        else:
-            return Response(
-                {'detail': 'Рецепта не было в списке покупок.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        return Response(
+            status=status.HTTP_204_NO_CONTENT if deleted
+            else status.HTTP_400_BAD_REQUEST
+        )
 
 
 class IngredientViewSet(ReadOnlyModelViewSet):
