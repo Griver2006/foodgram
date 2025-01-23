@@ -315,6 +315,8 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 'Поле не должно быть пустым'
             )
 
+        return value
+
 
 class RecipeShortSerializer(serializers.ModelSerializer):
     """
